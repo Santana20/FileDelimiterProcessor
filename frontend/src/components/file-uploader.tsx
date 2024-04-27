@@ -21,7 +21,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onFileUpload }) => {
         if (file) {
             onFileUpload(file);
         } else {
-            toast.info('Archivo no se encuentra para subirlo')
+            toast.error('No hay archivo para subir')
         }
     };
 

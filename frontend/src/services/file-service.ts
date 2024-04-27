@@ -58,15 +58,14 @@ export const removeLines = async (
     return [new Error('Unknow error')]
 }
 
-export const getFilteredLinesUrl = async (): Promise<[Error?, string?]> => {
+export const getFilteredLines = async (): Promise<[Error?, Blob?]> => {
     try {
         const response = await fetch(`${BASE_URL}/file/download-filtered-lines`);
         if (!response.ok) {
             throw new Error(`Error al obtener la URL del archivo de líneas filtradas: ${response.statusText}`);
         }
         const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        return [undefined, url];
+        return [undefined, blob];
     } catch (error) {
         console.error(error);
         if (error instanceof Error) return [error]
@@ -75,15 +74,14 @@ export const getFilteredLinesUrl = async (): Promise<[Error?, string?]> => {
     return [new Error('Unknow error')]
 };
 
-export const getRemovedLinesUrl = async (): Promise<[Error?, string?]> => {
+export const getRemovedLines = async (): Promise<[Error?, Blob?]> => {
     try {
         const response = await fetch(`${BASE_URL}/file/download-removed-lines`);
         if (!response.ok) {
             throw new Error(`Error al obtener la URL del archivo de líneas eliminadas: ${response.statusText}`);
         }
         const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        return [undefined, url];
+        return [undefined, blob];
     } catch (error) {
         console.error(error);
         if (error instanceof Error) return [error]
