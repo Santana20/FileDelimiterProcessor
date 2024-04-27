@@ -6,6 +6,8 @@ const router = express.Router();
 const upload = multer();
 
 let memoryFile: Express.Multer.File | undefined = undefined;
+let filteredFileBuffer: Buffer
+let removedFileBuffer: Buffer
 
 // Ruta para cargar archivos
 router.post('/upload', upload.single('file'), (req, res) => {
@@ -52,28 +54,34 @@ router.post('/remove-rows', (req, res) => {
     const filteredContent = filteredLines.join('\n');
     const removedContent = removedLines.join('\n');
 
-    // Crear flujos de lectura para los archivos con las líneas quitadas y las líneas que se quitaron
-    const fsFilteredContent = new Readable();
-    fsFilteredContent.push(filteredContent);
-    fsFilteredContent.push(null);
+    // Crear archivos adjuntos con el contenido
+    filteredFileBuffer = Buffer.from(filteredContent, 'utf-8');
+    removedFileBuffer = Buffer.from(removedContent, 'utf-8');
 
-    const fsRemovedContent = new Readable();
-    fsRemovedContent.push(removedContent);
-    fsRemovedContent.push(null);
-
-    // Enviar respuesta con dos archivos adjuntos
-    res.set('Content-Type', 'multipart/mixed');
-    res.attachment('file_filtered_lines.txt');
-    res.attachment('file_removed_lines.txt');
-    res.write(`--${Date.now()}\r\n`);
-    res.write(`Content-Disposition: attachment; filename="file_filtered_lines.txt"\r\n\r\n`);
-    res.write(filteredContent);
-    res.write(`\r\n--${Date.now()}\r\n`);
-    res.write(`Content-Disposition: attachment; filename="file_removed_lines.txt"\r\n\r\n`);
-    res.write(removedContent);
-    res.write(`\r\n--${Date.now()}--`);
-    res.end();
-
+    res.status(200).send('Se realizo las operaciones correctamente')
 });
+
+// Endpoint para descargar el archivo de líneas filtradas
+router.get('/download-filtered-lines', (req, res) => {
+    if (!filteredFileBuffer) {
+        return res.status(404).send('No se encontró el archivo de líneas filtradas');
+    }
+
+    res.set('Content-Type', 'text/plain');
+    res.attachment('file_filtered_lines.txt');
+    res.send(filteredFileBuffer);
+});
+
+// Endpoint para descargar el archivo de líneas eliminadas
+router.get('/download-removed-lines', (req, res) => {
+    if (!removedFileBuffer) {
+        return res.status(404).send('No se encontró el archivo de líneas eliminadas');
+    }
+
+    res.set('Content-Type', 'text/plain');
+    res.attachment('file_removed_lines.txt');
+    res.send(removedFileBuffer);
+});
+
 
 export default router;
