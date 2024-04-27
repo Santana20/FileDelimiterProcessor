@@ -13,6 +13,10 @@ app.use(express.json());
 // Usar las rutas de fileRoutes
 app.use('/file', fileRoutes);
 
+app.get('/', (req, res) => {
+    return res.status(200).send("server is running")
+})
+
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
