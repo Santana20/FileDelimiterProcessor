@@ -31,9 +31,9 @@ const FilesDownload: React.FC = () => {
     };
 
     return (
-        <div>
-            <button onClick={downloadFilteredLines}>Descargar archivo con líneas filtradas</button>
-            <button onClick={downloadRemovedLines}>Descargar archivo con líneas eliminadas</button>
+        <div className='flex gap-4 justify-center'>
+            <button className='bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded' onClick={downloadFilteredLines}>Descargar archivo con líneas filtradas</button>
+            <button className='bg-transparent hover:bg-red-500 text-red-700 font-semibold hover:text-white py-2 px-4 border border-red-500 hover:border-transparent rounded' onClick={downloadRemovedLines}>Descargar archivo con líneas eliminadas</button>
         </div>
     );
 };
