@@ -1,33 +1,39 @@
-import { getFilteredLinesUrl, getRemovedLinesUrl } from '@/services/file-service';
-import React, { useState } from 'react';
+import { getFilteredLines, getRemovedLines } from '@/services/file-service';
+import { saveAs } from 'file-saver';
+import React from 'react';
 import { toast } from 'sonner';
 
 const FilesDownload: React.FC = () => {
+    const downloadFilteredLines = async () => {
+        const [filteredLinesError, filteredLinesBlob] = await getFilteredLines();
 
-    const handleDownloadFiles = async () => {
-        const [filteredLinesError, filteredLinesUrl] = await getFilteredLinesUrl();
-        const [removedLinesError, removedLinesUrl] = await getRemovedLinesUrl();
-
-        if (filteredLinesError || removedLinesError) {
+        if (filteredLinesError) {
             toast.error('Error al obtener los enlaces de descarga de archivos');
             return;
         }
 
+        if (filteredLinesBlob) {
+            saveAs(filteredLinesBlob, 'file_filtered_lines.txt');
+        }
+    };
 
-        // Alternativamente, si deseas descargar los archivos automáticamente sin abrir una nueva ventana, puedes usar esto:
-        const filteredLinesAnchor = document.createElement('a');
-        filteredLinesAnchor.href = filteredLinesUrl!;
-        filteredLinesAnchor.download = 'file_filtered_lines.txt';
-        filteredLinesAnchor.click();
-        const removedLinesAnchor = document.createElement('a');
-        removedLinesAnchor.href = removedLinesUrl!;
-        removedLinesAnchor.download = 'file_removed_lines.txt';
-        removedLinesAnchor.click();
+    const downloadRemovedLines = async () => {
+        const [removedLinesError, removedLinesBlob] = await getRemovedLines();
+
+        if (removedLinesError) {
+            toast.error('Error al obtener los enlaces de descarga de archivos');
+            return;
+        }
+
+        if (removedLinesBlob) {
+            saveAs(removedLinesBlob, 'file_removed_lines.txt');
+        }
     };
 
     return (
         <div>
-            <button onClick={handleDownloadFiles}>Descargar archivos</button>
+            <button onClick={downloadFilteredLines}>Descargar archivo con líneas filtradas</button>
+            <button onClick={downloadRemovedLines}>Descargar archivo con líneas eliminadas</button>
         </div>
     );
 };
