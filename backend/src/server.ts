@@ -1,9 +1,9 @@
-import express from 'express';
 import cors from 'cors';
+import express from 'express';
 import fileRoutes from './routes/fileRoutes';
 
 const app = express();
-const port = 4000;
+const port = process.env.PORT || 4000;
 
 // Aplicar CORS
 app.use(cors());
