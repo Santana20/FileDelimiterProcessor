@@ -1,9 +1,7 @@
 import express from 'express';
-import multer from 'multer';
 import archiver from 'archiver';
 
 const router = express.Router();
-const upload = multer();
 
 function getFileNameAndExtension(nombreArchivo: string) {
     const parts = nombreArchivo.split('.');
@@ -16,45 +14,26 @@ function getFileNameAndExtension(nombreArchivo: string) {
     };
 }
 
-router.post('/subir-archivo', upload.single('archivo'), (req, res) => {
-    // Acceder al archivo subido
-    const archivo = req.file;
+type File = {
+    originalname: string;
+    buffer: string;
+};
 
-    // Acceder a los datos en formato JSON del body
-    const datosJSON = req.body;
-
-    // Hacer lo que necesites con el archivo y los datos JSON
-    console.log('Archivo recibido:', archivo);
-    console.log('Datos JSON recibidos:', datosJSON);
-
-    // Enviar una respuesta
-    res.send('Archivo y datos recibidos correctamente');
-});
 
 // Ruta para eliminar líneas del archivo en memoria
-router.post('/remove-rows', upload.single('file'), (req, res) => {
+router.post('/remove-rows', (req, res) => {
 
-    const { file: uploadFile } = req
+    console.log(req.body)
 
-    if (!uploadFile) {
-        return res.status(400).send('No se ha proporcionado ningún archivo');
-    }
-
-    console.log(req.body.body)
-
-    const bodyParse = JSON.parse(req.body.body);
-    console.log(bodyParse)
-
-    // Obtener el arreglo de filas a eliminar y el delimiter del cuerpo de la solicitud
-    const rowsToRemove: number[] = bodyParse.rowsToRemove;
-    const delimiter: string = bodyParse.delimiter || '|';
+    // Obtener datos del body
+    const uploadFile: File = req.body.uploadFile
+    const rowsToRemove: number[] = req.body.rowsToRemove;
+    const delimiter: string = req.body.delimiter || '|';
 
     if (!rowsToRemove || !Array.isArray(rowsToRemove)) {
         return res.status(400).send('Se espera un arreglo de filas a eliminar');
     }
-
-    const fileBuffer = uploadFile.buffer;
-    const fileContent = fileBuffer.toString('utf-8');
+    const fileContent = uploadFile.buffer
     const fileLines = fileContent.split('\n');
 
     // Separar las líneas en dos grupos: las que se mantendrán y las que se eliminarán
