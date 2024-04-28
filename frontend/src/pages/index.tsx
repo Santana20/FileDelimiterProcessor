@@ -1,23 +1,21 @@
-import FileUploader from '@/components/file-uploader';
+import FileRemoveLinesForm from '@/components/file-remove-lines-form';
 import FilesDownload from '@/components/files-download';
-import RemoveLinesForm from '@/components/remove-lines-form';
-import { removeLines, uploadFile } from '@/services/file-service';
-import { ReactNode, useState } from 'react';
+import { removeLinesV1 } from '@/services/file-service';
+import { FileResponse } from '@/types/types';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
 import { Toaster, toast } from 'sonner';
-import { motion } from 'framer-motion'
 
 const steps = [
   {
     id: 1,
-    name: 'Upload File',
+    title: 'Paso 1',
+    name: 'Llenar datos',
   },
   {
     id: 2,
-    name: 'Remove Lines',
-  },
-  {
-    id: 3,
-    name: 'Download new files',
+    title: 'Paso 2',
+    name: 'Descargar archivos',
   },
 ]
 
@@ -26,16 +24,13 @@ const Home = () => {
   const [currentStep, setCurrentStep] = useState(0)
   const delta = currentStep - previousStep;
 
+  const [filteredContent, setFilteredContent] = useState<FileResponse | null>(null);
+  const [removedContent, setRemovedContent] = useState<FileResponse | null>(null);
+
   const prev = () => {
     if (currentStep > 0) {
       setPreviousStep(currentStep)
       setCurrentStep(step => step - 1)
-    }
-  }
-
-  const next = () => {
-    if (currentStep < steps.length - 1) {
-      setPreviousStep(currentStep)
     }
   }
 
@@ -46,46 +41,36 @@ const Home = () => {
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}>
         {currentStep === 0 && (
-          <FileUploader onFileUpload={handleFileUpload} />
+          <FileRemoveLinesForm onSubmitForm={handleFileUpload} />
         )
         }
         {currentStep === 1 && (
-          <RemoveLinesForm onRemoveLines={handleRemoveLines} />
-        )
-        }
-        {currentStep === 2 && (
-          <FilesDownload />
+          <FilesDownload filteredFileResponse={filteredContent} removedFileResponse={removedContent} />
         )
         }
       </motion.div>
     )
   }
 
-  const handleFileUpload = async (file: File) => {
-    const [error, _] = await uploadFile(file)
+  const handleFileUpload = async (file: File, rowsToRemove: number[], delimiter: string) => {
+    console.log(file);
+
+    const [error, responseData] = await removeLinesV1(file, rowsToRemove, delimiter)
 
     if (error) {
       toast.error(error.message)
+      return
+    }
+
+    if (!responseData) {
+      toast.error('Archivos generados no existen')
       return
     }
 
     setCurrentStep(step => step + 1)
-    toast.success('Archivo subido correctamente')
-  };
-
-  const handleRemoveLines = async (lines: number[]) => {
-    const [error, success] = await removeLines(lines);
-
-    if (error) {
-      toast.error(error.message)
-      return
-    }
-
-    if (success) {
-      setCurrentStep(step => step + 1)
-      toast.success('Operacion realizada correctamente')
-    }
-
+    setFilteredContent(responseData.filteredFileResponse)
+    setRemovedContent(responseData.removedFileResponse)
+    toast.success('Archivos generados correctamente')
   };
 
   return (
@@ -100,7 +85,7 @@ const Home = () => {
                 {currentStep > index ? (
                   <div className='flex w-full flex-col border-l-4 py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4 group transition-colors border-sky-600'>
                     <span className='text-sm font-medium text-sky-600 transition-colors'>
-                      {`Step ${step.id}`}
+                      {step.title}
                     </span>
                     <span className='text-sm font-medium'>{step.name}</span>
                   </div>
@@ -110,14 +95,14 @@ const Home = () => {
                     aria-current='step'
                   >
                     <span className='text-sm font-medium text-sky-600'>
-                      {`Step ${step.id}`}
+                      {step.title}
                     </span>
                     <span className='text-sm font-medium'>{step.name}</span>
                   </div>
                 ) : (
                   <div className='flex w-full flex-col border-l-4 py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4 group transition-colors border-gray-200'>
                     <span className='text-sm font-medium text-gray-500 transition-colors'>
-                      {`Step ${step.id}`}
+                      {step.title}
                     </span>
                     <span className='text-sm font-medium'>{step.name}</span>
                   </div>
